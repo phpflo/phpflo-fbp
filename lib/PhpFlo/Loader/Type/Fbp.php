@@ -9,13 +9,26 @@
  */
 namespace PhpFlo\Loader\Type;
 
+use PhpFlo\Common\LoaderInterface;
+use PhpFlo\Parser\FbpParser;
+
 /**
  * Class Fbp
  *
  * @package PhpFlo\Loader\Type
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-class Fbp
+class Fbp implements LoaderInterface
 {
 
+    /**
+     * @param string $input
+     * @return array|bool
+     */
+    public function parse($input)
+    {
+        $parser = new FbpParser($input);
+
+        return $parser->run();
+    }
 }

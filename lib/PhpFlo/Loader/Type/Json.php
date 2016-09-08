@@ -21,6 +21,8 @@ class Json implements LoaderInterface
 {
 
     /**
+     * @todo add definition schema validation.
+     *
      * @param string $input
      * @return array|bool
      */

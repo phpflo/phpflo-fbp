@@ -21,6 +21,8 @@ use Symfony\Component\Yaml\Yaml as YamlLoader;
 class Yaml implements LoaderInterface
 {
     /**
+     * @todo add definition schema validation.
+     *
      * @param string $input
      * @return mixed
      */
