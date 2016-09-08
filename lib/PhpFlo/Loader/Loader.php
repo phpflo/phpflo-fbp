@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the phpflo\phpflo-fbp package.
+ *
+ * (c) Marc Aschmann <maschmann@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace PhpFlo\Loader;
 
 class Loader
@@ -14,16 +22,18 @@ class Loader
     {
         $type = self::checkType($file);
         $class = self::$loaders[$type];
+        $content = '';
 
-        if (is_file($file)) {
-            $content = file_get_contents($file);
-        } else {
-            throw new \InvalidArgumentException(
-                "Loader::load(): {$file} does not exist!"
-            );
+        /*
+         * if filecheck is disabled, we assume you're just providing
+         * the data as string
+         */
+        if ($filecheck) {
+            $content = self::loadFile($file);
         }
 
         $loader = new $class();
+
 
         return $content;
     }
@@ -44,5 +54,22 @@ class Loader
         }
 
         return $type;
+    }
+
+    /**
+     * @param string $file
+     * @return string
+     */
+    private static function loadFile($file)
+    {
+        if (is_file($file)) {
+            $content = file_get_contents($file);
+        } else {
+            throw new \InvalidArgumentException(
+                "Loader::load(): {$file} does not exist!"
+            );
+        }
+
+        return $content;
     }
 }
