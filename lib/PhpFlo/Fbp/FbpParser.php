@@ -91,9 +91,22 @@ class FbpParser implements FbpDefinitionsInterface
 
     private function extractConnectionPart($part)
     {
+        /**
+         * possibilities:
+         *
+         * '8003' -> LISTEN WebServer(HTTP/Server) # source
+         * '8003' -> LISTEN WebServer(HTTP/Server) REQUEST -> IN Profiler(HTTP/Profiler) # source/out/in
+         * ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr) # default connection with description
+         * GreetUser(HelloController) OUT[0] -> IN[0] WriteResponse(HTTP/WriteResponse) # array port connection
+         * ReadFile() OUT -> IN SplitbyLines() # no description but parenthesis
+         * ReadFile OUT -> IN SplitbyLines # just processes
+         *
+         * additionally it's possible to either have one string with a chain of connections or newline-separated
+         */
+
         return [
-            'process' => $process,
-            'port => 
-        ]
+            'process' => '',
+            'port' => '',
+        ];
     }
 }
