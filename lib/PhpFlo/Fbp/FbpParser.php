@@ -10,6 +10,7 @@
 namespace PhpFlo\Fbp;
 
 use PhpFlo\Common\FbpDefinitionsInterface;
+use PhpFlo\Exception\ParserDefinitionException;
 
 /**
  * Class FbpParser
@@ -81,15 +82,11 @@ class FbpParser implements FbpDefinitionsInterface
          * work each line and parse for definitions
          */
         foreach (preg_split('/' . self::NEWLINES . '/m', $this->source) as $line) {
-            if (1 == $this->linecount && false !== strpos("'", trim($line))) { // needs to be handled separately
-                // check for initializer and extract
-            }
-
             $subset = $this->examineSubset($line);
             $this->definition['connections'] = array_merge_recursive($this->definition['connections'], $subset);
             $this->linecount++;
         }
-
+print_r($this->definition);
         return $this->definition;
     }
 
@@ -102,6 +99,11 @@ class FbpParser implements FbpDefinitionsInterface
     {
         $subset = [];
         $nextSrc = null;
+        $hasInitializer = false;
+        if (1 == $this->linecount && 0 === strpos(trim($line), "'")) {
+            $hasInitializer = true;
+        }
+
         // subset
         foreach (explode(self::SOURCE_TARGET_SEPARATOR, $line) as $definition) {
             $resolved = $this->examineDefinition($definition);
@@ -111,6 +113,7 @@ class FbpParser implements FbpDefinitionsInterface
             //define states
             switch (true) {
                 case $hasInport && $hasOutport: // tgt + multi def
+                    //echo "1 " . print_r($definition,true) . "\n";
                     $nextSrc = $resolved;
                     $step['tgt'] = [
                         'process' => $resolved['process'],
@@ -118,12 +121,14 @@ class FbpParser implements FbpDefinitionsInterface
                     ];
                     break;
                 case $hasInport && $nextSrc: // fall through to manage source
+                    //echo "2 " . print_r($definition,true) . "\n";
                     $step['src'] = [
                         'process' => $nextSrc['process'],
                         'port' => $nextSrc['outport'],
                     ];
                     $nextSrc = null;
                 case $hasInport:
+                    //echo "3 " . print_r($definition,true) . "\n";
                     $step['tgt'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['inport'],
@@ -133,10 +138,16 @@ class FbpParser implements FbpDefinitionsInterface
                     $step = [];
                     break;
                 case $hasOutport:
+                    //echo "4 " . print_r($definition,true) . "\n";
                     $step['src'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['outport'],
                     ];
+                    break;
+                case $hasInitializer:
+                    //echo "5 " . print_r($definition,true) . "\n";
+                    $step['data'] = $definition;
+                    $hasInitializer = false; // reset
                     break;
                 default:
                     throw new ParserDefinitionException(

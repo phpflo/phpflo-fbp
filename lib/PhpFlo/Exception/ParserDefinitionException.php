@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpFlo\Fbp;
+namespace PhpFlo\Exception;
 
 /**
  * Class ParserDefinitionException

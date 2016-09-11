@@ -34,6 +34,13 @@ ReadTemplate(ReadFile) OUT -> TEMPLATE Render(Template)
 GreetUser() DATA -> OPTIONS Render() OUT -> STRING WriteResponse()
 EOF;
 
+        $file4 = <<<EOF
+'yadda' -> IN ReadFile(ReadFile)
+ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
+ReadFile ERROR -> IN Display(Output)
+SplitbyLines OUT -> IN CountLines(Counter)
+CountLines COUNT -> IN Display
+EOF;
 
 
         $expected1 = [
@@ -108,13 +115,24 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser($file1);
-        $this->assertEquals($expected1, $parser->run());
+        $expected2 = [];
 
-/*        $parser = new FbpParser($file2);
-        $this->assertEquals($expected2, $parser->run());
+        $expected3 = [];
+
+        $expected4 = [];
+
+//        $parser = new FbpParser($file1);
+//        $this->assertEquals($expected1, $parser->run());
 
         $parser = new FbpParser($file2);
-        $this->assertEquals($expected3, $parser->run());*/
+        $this->assertEquals($expected2, $parser->run());
+/*
+        $parser = new FbpParser($file3);
+        $this->assertEquals($expected3, $parser->run());
+
+        $parser = new FbpParser($file4);
+        $this->assertEquals($expected3, $parser->run());
+
+*/
     }
 }

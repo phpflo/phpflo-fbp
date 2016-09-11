@@ -13,12 +13,12 @@ namespace PhpFlo\Fbp;
 use PhpFlo\Common\FbpDefinitionsInterface;
 
 /**
- * Class FbpSerializer
+ * Class FbpDumper
  *
  * @package PhpFlo\Fbp
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-class FbpSerializer implements FbpDefinitionsInterface
+class FbpDumper implements FbpDefinitionsInterface
 {
 
 }
