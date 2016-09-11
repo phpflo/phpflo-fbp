@@ -36,6 +36,16 @@ class FbpParser implements FbpDefinitionsInterface
     private $schema;
 
     /**
+     * @var int
+     */
+    private $linecount;
+
+    /**
+     * @var array
+     */
+    private $definition;
+
+    /**
      * FbpParser constructor.
      *
      * @param string $source
@@ -43,7 +53,7 @@ class FbpParser implements FbpDefinitionsInterface
      */
     public function __construct($source, $settings = [])
     {
-        $this->source = $source;
+        $this->source   = $source;
         $this->settings = array_replace_recursive(
             [],
             $settings
@@ -54,6 +64,8 @@ class FbpParser implements FbpDefinitionsInterface
             'processes' => [],
             'connections' => [],
         ];
+
+        $this->definition = [];
     }
 
     /**
@@ -61,52 +73,139 @@ class FbpParser implements FbpDefinitionsInterface
      */
     public function run()
     {
-        $definition = [];
+        $this->definition = $this->schema; // reset
+        $this->linecount = 1;
 
-        // split by lines, OS-independent
-        $lines = preg_split ('/$\R?^/m', $this->source);
+        /*
+         * split by lines, OS-independent
+         * work each line and parse for definitions
+         */
+        foreach (preg_split('/' . self::NEWLINES . '/m', $this->source) as $line) {
+            if (1 == $this->linecount && false !== strpos("'", trim($line))) { // needs to be handled separately
+                // check for initializer and extract
+            }
 
-        foreach ($lines as $line) {
-            $part = $this->examine($line);
+            $subset = $this->examineSubset($line);
+            $this->definition['connections'] = array_merge_recursive($this->definition['connections'], $subset);
+            $this->linecount++;
         }
 
-        return $definition;
+        return $this->definition;
+    }
+
+    /**
+     * @param string $line
+     * @return array
+     * @throws ParserDefinitionException
+     */
+    private function examineSubset($line)
+    {
+        $subset = [];
+        $nextSrc = null;
+        // subset
+        foreach (explode(self::SOURCE_TARGET_SEPARATOR, $line) as $definition) {
+            $resolved = $this->examineDefinition($definition);
+            $hasInport = $this->hasValue($resolved, 'inport');
+            $hasOutport = $this->hasValue($resolved, 'outport');
+
+            //define states
+            switch (true) {
+                case $hasInport && $hasOutport: // tgt + multi def
+                    $nextSrc = $resolved;
+                    $step['tgt'] = [
+                        'process' => $resolved['process'],
+                        'port' => $resolved['inport'],
+                    ];
+                    break;
+                case $hasInport && $nextSrc: // fall through to manage source
+                    $step['src'] = [
+                        'process' => $nextSrc['process'],
+                        'port' => $nextSrc['outport'],
+                    ];
+                    $nextSrc = null;
+                case $hasInport:
+                    $step['tgt'] = [
+                        'process' => $resolved['process'],
+                        'port' => $resolved['inport'],
+                    ];
+                    // resolved touple
+                    array_push($subset, $step);
+                    $step = [];
+                    break;
+                case $hasOutport:
+                    $step['src'] = [
+                        'process' => $resolved['process'],
+                        'port' => $resolved['outport'],
+                    ];
+                    break;
+                default:
+                    throw new ParserDefinitionException(
+                        "Line ({$this->linecount}) {$line} does not contain in or out ports!"
+                    );
+            }
+        }
+
+        return $subset;
+    }
+
+    /**
+     * Check if array has a specific key and is not empty.
+     *
+     * @param array $check
+     * @param string $value
+     * @return bool
+     */
+    private function hasValue(array $check, $value)
+    {
+        if (empty($check[$value])) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * @param string $line
      * @return array
      */
-    private function examine($line)
+    private function examineDefinition($line)
     {
-        $part = [
-            'processes' => [],
-            'connections' => [],
-        ];
+        preg_match('/' . self::PROCESS_DEFINITION . '/', $line, $matches);
+        foreach ($matches as $key => $value) {
+            if (is_numeric($key)) {
+                unset($matches[$key]);
+            }
+        }
 
+        if (!empty($matches['process'])) {
+            if (empty($matches['alias'])) {
+                $matches['alias'] = $matches['process'];
+            }
 
+            $this->examineProcess($matches);
+        } else {
+            throw new ParserDefinitionException(
+                "No process definition found in line ({$this->linecount}) {$line}"
+            );
+        }
 
-        return $part;
+        return $matches;
     }
 
-    private function extractConnectionPart($part)
+    /**
+     * Add entry to processes.
+     *
+     * @param array $process
+     */
+    private function examineProcess(array $process)
     {
-        /**
-         * possibilities:
-         *
-         * '8003' -> LISTEN WebServer(HTTP/Server) # source
-         * '8003' -> LISTEN WebServer(HTTP/Server) REQUEST -> IN Profiler(HTTP/Profiler) # source/out/in
-         * ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr) # default connection with description
-         * GreetUser(HelloController) OUT[0] -> IN[0] WriteResponse(HTTP/WriteResponse) # array port connection
-         * ReadFile() OUT -> IN SplitbyLines() # no description but parenthesis
-         * ReadFile OUT -> IN SplitbyLines # just processes
-         *
-         * additionally it's possible to either have one string with a chain of connections or newline-separated
-         */
-
-        return [
-            'process' => '',
-            'port' => '',
-        ];
+        if (!isset($this->definition['processes'][$process['process']])) {
+            $this->definition['processes'][$process['process']] = [
+                'component' => $process['alias'],
+                'metadata' => [
+                    'label' => $process['alias'],
+                ],
+            ];
+        }
     }
 }
