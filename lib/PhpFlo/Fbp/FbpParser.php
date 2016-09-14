@@ -62,6 +62,7 @@ class FbpParser implements FbpDefinitionsInterface
 
         $this->schema = [
             'properties' => [],
+            'initializers' => [],
             'processes' => [],
             'connections' => [],
         ];
@@ -86,7 +87,7 @@ class FbpParser implements FbpDefinitionsInterface
             $this->definition['connections'] = array_merge_recursive($this->definition['connections'], $subset);
             $this->linecount++;
         }
-print_r($this->definition);
+
         return $this->definition;
     }
 
@@ -106,14 +107,27 @@ print_r($this->definition);
 
         // subset
         foreach (explode(self::SOURCE_TARGET_SEPARATOR, $line) as $definition) {
-            $resolved = $this->examineDefinition($definition);
+            $resolved = [];
+            if (!$hasInitializer) {
+                $resolved = $this->examineDefinition($definition);
+            }
+
             $hasInport = $this->hasValue($resolved, 'inport');
             $hasOutport = $this->hasValue($resolved, 'outport');
 
             //define states
             switch (true) {
+                case !empty($step['data']) && ($hasInport && $hasOutport): // initializer IN
+                    $nextSrc = $resolved;
+                    $step['tgt'] = [
+                        'process' => $resolved['process'],
+                        'port' => $resolved['inport'],
+                    ];
+                    // multi def oneliner initializer resolved
+                    array_push($this->definition['initializers'], $step);
+                    $step = [];
+                    break;
                 case $hasInport && $hasOutport: // tgt + multi def
-                    //echo "1 " . print_r($definition,true) . "\n";
                     $nextSrc = $resolved;
                     $step['tgt'] = [
                         'process' => $resolved['process'],
@@ -121,32 +135,32 @@ print_r($this->definition);
                     ];
                     break;
                 case $hasInport && $nextSrc: // fall through to manage source
-                    //echo "2 " . print_r($definition,true) . "\n";
                     $step['src'] = [
                         'process' => $nextSrc['process'],
                         'port' => $nextSrc['outport'],
                     ];
                     $nextSrc = null;
                 case $hasInport:
-                    //echo "3 " . print_r($definition,true) . "\n";
                     $step['tgt'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['inport'],
                     ];
                     // resolved touple
-                    array_push($subset, $step);
+                    if (empty($step['data'])) {
+                        array_push($subset, $step);
+                    } else {
+                        array_push($this->definition['initializers'], $step);
+                    }
                     $step = [];
                     break;
                 case $hasOutport:
-                    //echo "4 " . print_r($definition,true) . "\n";
                     $step['src'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['outport'],
                     ];
                     break;
-                case $hasInitializer:
-                    //echo "5 " . print_r($definition,true) . "\n";
-                    $step['data'] = $definition;
+                case $hasInitializer: // initialization value: at the moment we only support one
+                    $step['data'] = str_replace("'", '', $definition);
                     $hasInitializer = false; // reset
                     break;
                 default:
@@ -189,8 +203,8 @@ print_r($this->definition);
         }
 
         if (!empty($matches['process'])) {
-            if (empty($matches['alias'])) {
-                $matches['alias'] = $matches['process'];
+            if (empty($matches['component'])) {
+                $matches['component'] = $matches['process'];
             }
 
             $this->examineProcess($matches);
@@ -212,9 +226,9 @@ print_r($this->definition);
     {
         if (!isset($this->definition['processes'][$process['process']])) {
             $this->definition['processes'][$process['process']] = [
-                'component' => $process['alias'],
+                'component' => $process['component'],
                 'metadata' => [
-                    'label' => $process['alias'],
+                    'label' => $process['process'],
                 ],
             ];
         }

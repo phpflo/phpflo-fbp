@@ -19,6 +19,6 @@ namespace PhpFlo\Common;
 interface FbpDefinitionsInterface
 {
     const SOURCE_TARGET_SEPARATOR = '->';
-    const PROCESS_DEFINITION = '((?P<inport>[A-Z]+(\[(?P<inport_no>[0-9]+)\])?)\s)?((?P<process>[\w\/]+)(\((?P<alias>[\w\/]+)\))?)(\s(?P<outport>[A-Z]+(\[(?P<outport_no>[0-9]+)\])?))?';
+    const PROCESS_DEFINITION = '((?P<inport>[A-Z]+(\[(?P<inport_no>[0-9]+)\])?)\s)?((?P<process>[\w\/]+)(\((?P<component>[\w\/\\\.]+)?\))?)(\s(?P<outport>[A-Z]+(\[(?P<outport_no>[0-9]+)\])?))?';
     const NEWLINES = '$\R?^';
 }

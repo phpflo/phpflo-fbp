@@ -45,6 +45,7 @@ EOF;
 
         $expected1 = [
             'properties' => [],
+            'initializers' => [],
             'processes' => [
                 'ReadFile' => [
                     'component' => 'ReadFile',
@@ -55,19 +56,19 @@ EOF;
                 'SplitbyLines' => [
                     'component' => 'SplitStr',
                     'metadata' => [
-                        'label' => 'SplitStr',
+                        'label' => 'SplitbyLines',
                     ],
                 ],
                 'Display' => [
                     'component' => 'Output',
                     'metadata' => [
-                        'label' => 'Output',
+                        'label' => 'Display',
                     ],
                 ],
                 'CountLines' => [
                     'component' => 'Counter',
                     'metadata' => [
-                        'label' => 'Counter',
+                        'label' => 'CountLines',
                     ],
                 ]
             ],
@@ -115,14 +116,115 @@ EOF;
             ],
         ];
 
-        $expected2 = [];
+        $expected2 = [
+            'properties' => [],
+            'initializers' => [
+                [
+                    'data' => '8003',
+                    'tgt' => [
+                        'process' => 'WebServer',
+                        'port' => 'LISTEN',
+                    ],
+                ]
+            ],
+            'processes' => [
+                'WebServer' => [
+                    'component' => 'HTTP/Server',
+                    'metadata' => [
+                        'label' => 'WebServer',
+                    ],
+                ],
+                'Profiler' => [
+                    'component' => 'HTTP/Profiler',
+                    'metadata' => [
+                        'label' => 'Profiler',
+                    ],
+                ],
+                'Authentication' => [
+                    'component' => 'HTTP/BasicAuth',
+                    'metadata' => [
+                        'label' => 'Authentication',
+                    ],
+                ],
+                'GreetUser' => [
+                    'component' => 'HelloController',
+                    'metadata' => [
+                        'label' => 'GreetUser',
+                    ],
+                ],
+                'WriteResponse' => [
+                    'component' => 'HTTP/WriteResponse',
+                    'metadata' => [
+                        'label' => 'WriteResponse',
+                    ],
+                ],
+                'Send' => [
+                    'component' => 'HTTP/SendResponse',
+                    'metadata' => [
+                        'label' => 'Send',
+                    ],
+                ],
+            ],
+            'connections' => [
+                [
+                    'src' => [
+                        'process' => 'WebServer',
+                        'port' => 'REQUEST',
+                    ],
+                    'tgt' => [
+                        'process' => 'Profiler',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'Profiler',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'Authentication',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'Authentication',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'GreetUser',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'GreetUser',
+                        'port' => 'OUT[0]',
+                    ],
+                    'tgt' => [
+                        'process' => 'WriteResponse',
+                        'port' => 'IN[0]',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'WriteResponse',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'Send',
+                        'port' => 'IN',
+                    ],
+                ],
+            ],
+        ];
 
         $expected3 = [];
 
         $expected4 = [];
 
-//        $parser = new FbpParser($file1);
-//        $this->assertEquals($expected1, $parser->run());
+        $parser = new FbpParser($file1);
+        $this->assertEquals($expected1, $parser->run());
 
         $parser = new FbpParser($file2);
         $this->assertEquals($expected2, $parser->run());
