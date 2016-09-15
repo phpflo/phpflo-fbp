@@ -160,7 +160,7 @@ class FbpParser implements FbpDefinitionsInterface
                     ];
                     break;
                 case $hasInitializer: // initialization value: at the moment we only support one
-                    $step['data'] = str_replace("'", '', $definition);
+                    $step['data'] = trim($definition, " '");
                     $hasInitializer = false; // reset
                     break;
                 default:
