@@ -13,37 +13,18 @@ use PhpFlo\Fbp\FbpParser;
 
 class FbpParserTest extends \PHPUnit_Framework_TestCase
 {
-    public function testParse()
+    public function testSimpleSingleDef()
     {
         // base for testing: https://github.com/flowbased/fbp/blob/master/spec/json.coffee
 
-        $file1 = <<<EOF
+        $file = <<<EOF
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
 ReadFile ERROR -> IN Display(Output)
 SplitbyLines OUT -> IN CountLines(Counter)
 CountLines COUNT -> IN Display
 EOF;
 
-        $file2 = <<<EOF
-'8003' -> LISTEN WebServer(HTTP/Server) REQUEST -> IN Profiler(HTTP/Profiler) OUT -> IN Authentication(HTTP/BasicAuth)
-Authentication() OUT -> IN GreetUser(HelloController) OUT[0] -> IN[0] WriteResponse(HTTP/WriteResponse) OUT -> IN Send(HTTP/SendResponse)
-EOF;
-
-        $file3 = <<<EOF
-ReadTemplate(ReadFile) OUT -> TEMPLATE Render(Template)
-GreetUser() DATA -> OPTIONS Render() OUT -> STRING WriteResponse()
-EOF;
-
-        $file4 = <<<EOF
-'yadda' -> IN ReadFile(ReadFile)
-ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
-ReadFile ERROR -> IN Display(Output)
-SplitbyLines OUT -> IN CountLines(Counter)
-CountLines COUNT -> IN Display
-EOF;
-
-
-        $expected1 = [
+        $expected = [
             'properties' => [],
             'initializers' => [],
             'processes' => [
@@ -56,19 +37,19 @@ EOF;
                 'SplitbyLines' => [
                     'component' => 'SplitStr',
                     'metadata' => [
-                        'label' => 'SplitbyLines',
+                        'label' => 'SplitStr',
                     ],
                 ],
                 'Display' => [
                     'component' => 'Output',
                     'metadata' => [
-                        'label' => 'Display',
+                        'label' => 'Output',
                     ],
                 ],
                 'CountLines' => [
                     'component' => 'Counter',
                     'metadata' => [
-                        'label' => 'CountLines',
+                        'label' => 'Counter',
                     ],
                 ]
             ],
@@ -116,7 +97,18 @@ EOF;
             ],
         ];
 
-        $expected2 = [
+        $parser = new FbpParser($file);
+        $this->assertEquals($expected, $parser->run());
+    }
+
+    public function testMultiDefWithInitializer()
+    {
+        $file = <<<EOF
+'8003' -> LISTEN WebServer(HTTP/Server) REQUEST -> IN Profiler(HTTP/Profiler) OUT -> IN Authentication(HTTP/BasicAuth)
+Authentication() OUT -> IN GreetUser(HelloController) OUT[0] -> IN[0] WriteResponse(HTTP/WriteResponse) OUT -> IN Send(HTTP/SendResponse)
+EOF;
+
+        $expected = [
             'properties' => [],
             'initializers' => [
                 [
@@ -131,37 +123,37 @@ EOF;
                 'WebServer' => [
                     'component' => 'HTTP/Server',
                     'metadata' => [
-                        'label' => 'WebServer',
+                        'label' => 'HTTP/Server',
                     ],
                 ],
                 'Profiler' => [
                     'component' => 'HTTP/Profiler',
                     'metadata' => [
-                        'label' => 'Profiler',
+                        'label' => 'HTTP/Profiler',
                     ],
                 ],
                 'Authentication' => [
                     'component' => 'HTTP/BasicAuth',
                     'metadata' => [
-                        'label' => 'Authentication',
+                        'label' => 'HTTP/BasicAuth',
                     ],
                 ],
                 'GreetUser' => [
                     'component' => 'HelloController',
                     'metadata' => [
-                        'label' => 'GreetUser',
+                        'label' => 'HelloController',
                     ],
                 ],
                 'WriteResponse' => [
                     'component' => 'HTTP/WriteResponse',
                     'metadata' => [
-                        'label' => 'WriteResponse',
+                        'label' => 'HTTP/WriteResponse',
                     ],
                 ],
                 'Send' => [
                     'component' => 'HTTP/SendResponse',
                     'metadata' => [
-                        'label' => 'Send',
+                        'label' => 'HTTP/SendResponse',
                     ],
                 ],
             ],
@@ -219,22 +211,176 @@ EOF;
             ],
         ];
 
-        $expected3 = [];
+        $parser = new FbpParser($file);
+        $this->assertEquals($expected, $parser->run());
+    }
 
-        $expected4 = [];
+    public function testSimpleWithEmptyDescription()
+    {
+        $file = <<<EOF
+ReadTemplate(ReadFile) OUT -> TEMPLATE Render(Template)
+GreetUser() DATA -> OPTIONS Render() OUT -> STRING WriteResponse()
+EOF;
 
-        $parser = new FbpParser($file1);
-        $this->assertEquals($expected1, $parser->run());
+        $expected = [
+            'properties' => [],
+            'initializers' => [],
+            'processes' => [
+                'ReadTemplate' => [
+                    'component' => 'ReadFile',
+                    'metadata' => [
+                        'label' => 'ReadFile',
+                    ],
+                ],
+                'Render' => [
+                    'component' => 'Template',
+                    'metadata' => [
+                        'label' => 'Template',
+                    ],
+                ],
+                'GreetUser' => [
+                    'component' => 'GreetUser',
+                    'metadata' => [
+                        'label' => 'GreetUser',
+                    ],
+                ],
+                'WriteResponse' => [
+                    'component' => 'WriteResponse',
+                    'metadata' => [
+                        'label' => 'WriteResponse',
+                    ],
+                ],
+            ],
+            'connections' => [
+                [
+                    'src' => [
+                        'process' => 'ReadTemplate',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'Render',
+                        'port' => 'TEMPLATE',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'GreetUser',
+                        'port' => 'DATA',
+                    ],
+                    'tgt' => [
+                        'process' => 'Render',
+                        'port' => 'OPTIONS',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'Render',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'WriteResponse',
+                        'port' => 'STRING',
+                    ],
+                ],
+            ],
+        ];
 
-        $parser = new FbpParser($file2);
-        $this->assertEquals($expected2, $parser->run());
-/*
-        $parser = new FbpParser($file3);
-        $this->assertEquals($expected3, $parser->run());
+        $parser = new FbpParser($file);
+        $this->assertEquals($expected, $parser->run());
+    }
 
-        $parser = new FbpParser($file4);
-        $this->assertEquals($expected3, $parser->run());
+    public function testSingleDefWithInitializer()
+    {
+        $file = <<<EOF
+'yadda' -> IN ReadFile(ReadFile)
+ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
+ReadFile ERROR -> IN Display(Output)
+SplitbyLines OUT -> IN CountLines(Counter)
+CountLines COUNT -> IN Display
+EOF;
 
-*/
+        $expected = [
+            'properties' => [],
+            'initializers' => [
+                [
+                    'data' => 'yadda',
+                    'tgt' => [
+                        'process' => 'ReadFile',
+                        'port' => 'IN',
+                    ],
+                ],
+            ],
+            'processes' => [
+                'ReadFile' => [
+                    'component' => 'ReadFile',
+                    'metadata' => [
+                        'label' => 'ReadFile',
+                    ],
+                ],
+                'SplitbyLines' => [
+                    'component' => 'SplitStr',
+                    'metadata' => [
+                        'label' => 'SplitStr',
+                    ],
+                ],
+                'Display' => [
+                    'component' => 'Output',
+                    'metadata' => [
+                        'label' => 'Output',
+                    ],
+                ],
+                'CountLines' => [
+                    'component' => 'Counter',
+                    'metadata' => [
+                        'label' => 'Counter',
+                    ],
+                ]
+            ],
+            'connections' => [
+                [
+                    'src' => [
+                        'process' => 'ReadFile',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'SplitbyLines',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'ReadFile',
+                        'port' => 'ERROR',
+                    ],
+                    'tgt' => [
+                        'process' => 'Display',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'SplitbyLines',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'CountLines',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'CountLines',
+                        'port' => 'COUNT',
+                    ],
+                    'tgt' => [
+                        'process' => 'Display',
+                        'port' => 'IN',
+                    ],
+                ],
+            ],
+        ];
+
+        $parser = new FbpParser($file);
+        $this->assertEquals($expected, $parser->run());
     }
 }

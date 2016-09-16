@@ -101,6 +101,7 @@ class FbpParser implements FbpDefinitionsInterface
         $subset = [];
         $nextSrc = null;
         $hasInitializer = false;
+        $isMultiline = false;
         if (1 == $this->linecount && 0 === strpos(trim($line), "'")) {
             $hasInitializer = true;
         }
@@ -108,6 +109,7 @@ class FbpParser implements FbpDefinitionsInterface
         // subset
         foreach (explode(self::SOURCE_TARGET_SEPARATOR, $line) as $definition) {
             $resolved = [];
+
             if (!$hasInitializer) {
                 $resolved = $this->examineDefinition($definition);
             }
@@ -117,7 +119,8 @@ class FbpParser implements FbpDefinitionsInterface
 
             //define states
             switch (true) {
-                case !empty($step['data']) && ($hasInport && $hasOutport): // initializer IN
+                case !empty($step['data']) && ($hasInport && $hasOutport):
+                    // initializer + inport
                     $nextSrc = $resolved;
                     $step['tgt'] = [
                         'process' => $resolved['process'],
@@ -127,14 +130,37 @@ class FbpParser implements FbpDefinitionsInterface
                     array_push($this->definition['initializers'], $step);
                     $step = [];
                     break;
-                case $hasInport && $hasOutport: // tgt + multi def
+                case !empty($nextSrc) && ($hasInport && $hasOutport):
+                    // if there was an initializer, we get a full touple with this iteration
+                    $step = [
+                        'src' => [
+                            'process' => $nextSrc['process'],
+                            'port' => $nextSrc['outport'],
+                        ],
+                        'tgt' => [
+                            'process' => $resolved['process'],
+                            'port' => $resolved['inport'],
+                        ]
+                    ];
+                    $nextSrc = $resolved;
+                    array_push($subset, $step);
+                    $step = [];
+                    break;
+                case $hasInport && $hasOutport:
+                    // tgt + multi def
                     $nextSrc = $resolved;
                     $step['tgt'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['inport'],
                     ];
+                    // check if we've already got the touple ready
+                    if (!empty($step['src'])) {
+                        array_push($subset, $step);
+                        $step = [];
+                    }
                     break;
-                case $hasInport && $nextSrc: // fall through to manage source
+                case $hasInport && $nextSrc:
+                    // use orevious OUT as src to fill touple
                     $step['src'] = [
                         'process' => $nextSrc['process'],
                         'port' => $nextSrc['outport'],
@@ -151,15 +177,18 @@ class FbpParser implements FbpDefinitionsInterface
                     } else {
                         array_push($this->definition['initializers'], $step);
                     }
+                    $nextSrc = null;
                     $step = [];
                     break;
                 case $hasOutport:
+                    // simplest case OUT -> IN
                     $step['src'] = [
                         'process' => $resolved['process'],
                         'port' => $resolved['outport'],
                     ];
                     break;
-                case $hasInitializer: // initialization value: at the moment we only support one
+                case $hasInitializer:
+                    // initialization value: at the moment we only support one
                     $step['data'] = trim($definition, " '");
                     $hasInitializer = false; // reset
                     break;
@@ -225,10 +254,15 @@ class FbpParser implements FbpDefinitionsInterface
     private function examineProcess(array $process)
     {
         if (!isset($this->definition['processes'][$process['process']])) {
+            $component = $process['component'];
+            if (empty($component)) {
+                $component = $process['process'];
+            }
+
             $this->definition['processes'][$process['process']] = [
-                'component' => $process['component'],
+                'component' => $component,
                 'metadata' => [
-                    'label' => $process['process'],
+                    'label' => $component,
                 ],
             ];
         }
