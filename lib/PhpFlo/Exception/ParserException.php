@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of the <package> package.
+ * This file is part of the phpflo\phpflo-fbp package.
  *
  * (c) Marc Aschmann <maschmann@gmail.com>
  *

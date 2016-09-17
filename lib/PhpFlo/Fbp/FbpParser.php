@@ -61,10 +61,12 @@ class FbpParser implements FbpDefinitionsInterface
         );
 
         $this->schema = [
-            'properties' => [],
-            'initializers' => [],
-            'processes' => [],
-            'connections' => [],
+            self::PROPERTIES_LABEL => [
+                'name' => '',
+            ],
+            self::INITIALIZERS_LABEL => [],
+            self::PROCESSES_LABEL => [],
+            self::CONNECTIONS_LABEL => [],
         ];
 
         $this->definition = [];
@@ -84,7 +86,9 @@ class FbpParser implements FbpDefinitionsInterface
          */
         foreach (preg_split('/' . self::NEWLINES . '/m', $this->source) as $line) {
             $subset = $this->examineSubset($line);
-            $this->definition['connections'] = array_merge_recursive($this->definition['connections'], $subset);
+            $this->definition[self::CONNECTIONS_LABEL] = array_merge_recursive(
+                $this->definition[self::CONNECTIONS_LABEL], $subset
+            );
             $this->linecount++;
         }
 
@@ -101,7 +105,7 @@ class FbpParser implements FbpDefinitionsInterface
         $subset = [];
         $nextSrc = null;
         $hasInitializer = false;
-        $isMultiline = false;
+
         if (1 == $this->linecount && 0 === strpos(trim($line), "'")) {
             $hasInitializer = true;
         }
@@ -114,32 +118,32 @@ class FbpParser implements FbpDefinitionsInterface
                 $resolved = $this->examineDefinition($definition);
             }
 
-            $hasInport = $this->hasValue($resolved, 'inport');
-            $hasOutport = $this->hasValue($resolved, 'outport');
+            $hasInport = $this->hasValue($resolved, self::INPORT_LABEL);
+            $hasOutport = $this->hasValue($resolved, self::OUTPORT_LABEL);
 
             //define states
             switch (true) {
-                case !empty($step['data']) && ($hasInport && $hasOutport):
+                case !empty($step[self::DATA_LABEL]) && ($hasInport && $hasOutport):
                     // initializer + inport
                     $nextSrc = $resolved;
-                    $step['tgt'] = [
-                        'process' => $resolved['process'],
-                        'port' => $resolved['inport'],
+                    $step[self::TARGET_LABEL] = [
+                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
+                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
                     ];
                     // multi def oneliner initializer resolved
-                    array_push($this->definition['initializers'], $step);
+                    array_push($this->definition[self::INITIALIZERS_LABEL], $step);
                     $step = [];
                     break;
                 case !empty($nextSrc) && ($hasInport && $hasOutport):
                     // if there was an initializer, we get a full touple with this iteration
                     $step = [
-                        'src' => [
-                            'process' => $nextSrc['process'],
-                            'port' => $nextSrc['outport'],
+                        self::SOURCE_LABEL => [
+                            self::PROCESS_LABEL => $nextSrc[self::PROCESS_LABEL],
+                            self::PORT_LABEL => $nextSrc[self::OUTPORT_LABEL],
                         ],
-                        'tgt' => [
-                            'process' => $resolved['process'],
-                            'port' => $resolved['inport'],
+                        self::TARGET_LABEL => [
+                            self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
+                            self::PORT_LABEL => $resolved[self::INPORT_LABEL],
                         ]
                     ];
                     $nextSrc = $resolved;
@@ -149,47 +153,47 @@ class FbpParser implements FbpDefinitionsInterface
                 case $hasInport && $hasOutport:
                     // tgt + multi def
                     $nextSrc = $resolved;
-                    $step['tgt'] = [
-                        'process' => $resolved['process'],
-                        'port' => $resolved['inport'],
+                    $step[self::TARGET_LABEL] = [
+                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
+                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
                     ];
                     // check if we've already got the touple ready
-                    if (!empty($step['src'])) {
+                    if (!empty($step[self::SOURCE_LABEL])) {
                         array_push($subset, $step);
                         $step = [];
                     }
                     break;
                 case $hasInport && $nextSrc:
                     // use orevious OUT as src to fill touple
-                    $step['src'] = [
-                        'process' => $nextSrc['process'],
-                        'port' => $nextSrc['outport'],
+                    $step[self::SOURCE_LABEL] = [
+                        self::PROCESS_LABEL => $nextSrc[self::PROCESS_LABEL],
+                        self::PORT_LABEL => $nextSrc[self::OUTPORT_LABEL],
                     ];
                     $nextSrc = null;
                 case $hasInport:
-                    $step['tgt'] = [
-                        'process' => $resolved['process'],
-                        'port' => $resolved['inport'],
+                    $step[self::TARGET_LABEL] = [
+                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
+                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
                     ];
                     // resolved touple
-                    if (empty($step['data'])) {
+                    if (empty($step[self::DATA_LABEL])) {
                         array_push($subset, $step);
                     } else {
-                        array_push($this->definition['initializers'], $step);
+                        array_push($this->definition[self::INITIALIZERS_LABEL], $step);
                     }
                     $nextSrc = null;
                     $step = [];
                     break;
                 case $hasOutport:
                     // simplest case OUT -> IN
-                    $step['src'] = [
-                        'process' => $resolved['process'],
-                        'port' => $resolved['outport'],
+                    $step[self::SOURCE_LABEL] = [
+                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
+                        self::PORT_LABEL => $resolved[self::OUTPORT_LABEL],
                     ];
                     break;
                 case $hasInitializer:
                     // initialization value: at the moment we only support one
-                    $step['data'] = trim($definition, " '");
+                    $step[self::DATA_LABEL] = trim($definition, " '");
                     $hasInitializer = false; // reset
                     break;
                 default:
@@ -231,9 +235,9 @@ class FbpParser implements FbpDefinitionsInterface
             }
         }
 
-        if (!empty($matches['process'])) {
-            if (empty($matches['component'])) {
-                $matches['component'] = $matches['process'];
+        if (!empty($matches[self::PROCESS_LABEL])) {
+            if (empty($matches[self::COMPONENT_LABEL])) {
+                $matches[self::COMPONENT_LABEL] = $matches[self::PROCESS_LABEL];
             }
 
             $this->examineProcess($matches);
@@ -253,15 +257,15 @@ class FbpParser implements FbpDefinitionsInterface
      */
     private function examineProcess(array $process)
     {
-        if (!isset($this->definition['processes'][$process['process']])) {
-            $component = $process['component'];
+        if (!isset($this->definition[self::PROCESSES_LABEL][$process[self::PROCESS_LABEL]])) {
+            $component = $process[self::COMPONENT_LABEL];
             if (empty($component)) {
-                $component = $process['process'];
+                $component = $process[self::PROCESS_LABEL];
             }
 
-            $this->definition['processes'][$process['process']] = [
-                'component' => $component,
-                'metadata' => [
+            $this->definition[self::PROCESSES_LABEL][$process[self::PROCESS_LABEL]] = [
+                self::COMPONENT_LABEL => $component,
+                self::METADATA_LABEL => [
                     'label' => $component,
                 ],
             ];

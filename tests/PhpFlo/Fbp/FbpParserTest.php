@@ -25,7 +25,7 @@ CountLines COUNT -> IN Display
 EOF;
 
         $expected = [
-            'properties' => [],
+            'properties' => ['name' => '',],
             'initializers' => [],
             'processes' => [
                 'ReadFile' => [
@@ -109,7 +109,7 @@ Authentication() OUT -> IN GreetUser(HelloController) OUT[0] -> IN[0] WriteRespo
 EOF;
 
         $expected = [
-            'properties' => [],
+            'properties' => ['name' => '',],
             'initializers' => [
                 [
                     'data' => '8003',
@@ -223,7 +223,7 @@ GreetUser() DATA -> OPTIONS Render() OUT -> STRING WriteResponse()
 EOF;
 
         $expected = [
-            'properties' => [],
+            'properties' => ['name' => '',],
             'initializers' => [],
             'processes' => [
                 'ReadTemplate' => [
@@ -300,7 +300,7 @@ CountLines COUNT -> IN Display
 EOF;
 
         $expected = [
-            'properties' => [],
+            'properties' => ['name' => '',],
             'initializers' => [
                 [
                     'data' => 'yadda',

@@ -8,15 +8,20 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpFlo\Exception;
+namespace PhpFlo\Fbp;
 
 /**
- * Class ParserDefinitionException
+ * Class FbpDefinition
  *
  * @package PhpFlo\Fbp
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-class ParserDefinitionException extends \InvalidArgumentException
+class FbpDefinition
 {
+    private $schema;
 
+    public function __construct()
+    {
+        $this->schema = [];
+    }
 }
