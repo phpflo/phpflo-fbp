@@ -270,6 +270,14 @@ EOF;
 
     public function testFbpDump()
     {
-        $this->markTestSkipped();
+        $expected = <<<EOF
+ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
+ReadFile(ReadFile) ERROR -> IN Display(Output)
+SplitbyLines(SplitStr) OUT -> IN CountLines(Counter)
+CountLines(Counter) COUNT -> IN Display(Output)
+EOF;
+
+        $fbp = FbpDumper::toFbp($this->source);
+        $this->assertEquals($expected, $fbp);
     }
 }
