@@ -14,81 +14,84 @@ use PhpFlo\Fbp\FbpDumper;
 
 class FbpDumperTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var array
+     */
+    private $source = [
+        'properties' => ['name' => '',],
+        'initializers' => [],
+        'processes' => [
+            'ReadFile' => [
+                'component' => 'ReadFile',
+                'metadata' => [
+                    'label' => 'ReadFile',
+                ],
+            ],
+            'SplitbyLines' => [
+                'component' => 'SplitStr',
+                'metadata' => [
+                    'label' => 'SplitStr',
+                ],
+            ],
+            'Display' => [
+                'component' => 'Output',
+                'metadata' => [
+                    'label' => 'Output',
+                ],
+            ],
+            'CountLines' => [
+                'component' => 'Counter',
+                'metadata' => [
+                    'label' => 'Counter',
+                ],
+            ]
+        ],
+        'connections' => [
+            [
+                'src' => [
+                    'process' => 'ReadFile',
+                    'port' => 'OUT',
+                ],
+                'tgt' => [
+                    'process' => 'SplitbyLines',
+                    'port' => 'IN',
+                ],
+            ],
+            [
+                'src' => [
+                    'process' => 'ReadFile',
+                    'port' => 'ERROR',
+                ],
+                'tgt' => [
+                    'process' => 'Display',
+                    'port' => 'IN',
+                ],
+            ],
+            [
+                'src' => [
+                    'process' => 'SplitbyLines',
+                    'port' => 'OUT',
+                ],
+                'tgt' => [
+                    'process' => 'CountLines',
+                    'port' => 'IN',
+                ],
+            ],
+            [
+                'src' => [
+                    'process' => 'CountLines',
+                    'port' => 'COUNT',
+                ],
+                'tgt' => [
+                    'process' => 'Display',
+                    'port' => 'IN',
+                ],
+            ],
+        ],
+    ];
+
     public function testJsonDump()
     {
-        $source = [
-            'properties' => ['name' => '',],
-            'initializers' => [],
-            'processes' => [
-                'ReadFile' => [
-                    'component' => 'ReadFile',
-                    'metadata' => [
-                        'label' => 'ReadFile',
-                    ],
-                ],
-                'SplitbyLines' => [
-                    'component' => 'SplitStr',
-                    'metadata' => [
-                        'label' => 'SplitStr',
-                    ],
-                ],
-                'Display' => [
-                    'component' => 'Output',
-                    'metadata' => [
-                        'label' => 'Output',
-                    ],
-                ],
-                'CountLines' => [
-                    'component' => 'Counter',
-                    'metadata' => [
-                        'label' => 'Counter',
-                    ],
-                ]
-            ],
-            'connections' => [
-                [
-                    'src' => [
-                        'process' => 'ReadFile',
-                        'port' => 'OUT',
-                    ],
-                    'tgt' => [
-                        'process' => 'SplitbyLines',
-                        'port' => 'IN',
-                    ],
-                ],
-                [
-                    'src' => [
-                        'process' => 'ReadFile',
-                        'port' => 'ERROR',
-                    ],
-                    'tgt' => [
-                        'process' => 'Display',
-                        'port' => 'IN',
-                    ],
-                ],
-                [
-                    'src' => [
-                        'process' => 'SplitbyLines',
-                        'port' => 'OUT',
-                    ],
-                    'tgt' => [
-                        'process' => 'CountLines',
-                        'port' => 'IN',
-                    ],
-                ],
-                [
-                    'src' => [
-                        'process' => 'CountLines',
-                        'port' => 'COUNT',
-                    ],
-                    'tgt' => [
-                        'process' => 'Display',
-                        'port' => 'IN',
-                    ],
-                ],
-            ],
-        ];
-
         $expected = <<< EOF
 {
     "properties": {
@@ -166,7 +169,107 @@ class FbpDumperTest extends \PHPUnit_Framework_TestCase
 }
 EOF;
 
-        $json = FbpDumper::toJson($source);
+        $json = FbpDumper::toJson($this->source);
         $this->assertEquals($expected, $json);
+    }
+
+    public function testYamlDump()
+    {
+        $expected1 = <<<EOF
+properties:
+    name: ''
+initializers: {  }
+processes:
+    ReadFile:
+        component: ReadFile
+        metadata:
+            label: ReadFile
+    SplitbyLines:
+        component: SplitStr
+        metadata:
+            label: SplitStr
+    Display:
+        component: Output
+        metadata:
+            label: Output
+    CountLines:
+        component: Counter
+        metadata:
+            label: Counter
+connections:
+    -
+        src:
+            process: ReadFile
+            port: OUT
+        tgt:
+            process: SplitbyLines
+            port: IN
+    -
+        src:
+            process: ReadFile
+            port: ERROR
+        tgt:
+            process: Display
+            port: IN
+    -
+        src:
+            process: SplitbyLines
+            port: OUT
+        tgt:
+            process: CountLines
+            port: IN
+    -
+        src:
+            process: CountLines
+            port: COUNT
+        tgt:
+            process: Display
+            port: IN
+
+EOF;
+
+        $expected2 = <<<EOF
+properties:
+    name: ''
+initializers: {  }
+processes:
+    ReadFile:
+        component: ReadFile
+        metadata: { label: ReadFile }
+    SplitbyLines:
+        component: SplitStr
+        metadata: { label: SplitStr }
+    Display:
+        component: Output
+        metadata: { label: Output }
+    CountLines:
+        component: Counter
+        metadata: { label: Counter }
+connections:
+    -
+        src: { process: ReadFile, port: OUT }
+        tgt: { process: SplitbyLines, port: IN }
+    -
+        src: { process: ReadFile, port: ERROR }
+        tgt: { process: Display, port: IN }
+    -
+        src: { process: SplitbyLines, port: OUT }
+        tgt: { process: CountLines, port: IN }
+    -
+        src: { process: CountLines, port: COUNT }
+        tgt: { process: Display, port: IN }
+
+EOF;
+
+
+        $yaml = FbpDumper::toYaml($this->source, 4);
+        $this->assertEquals($expected1, $yaml);
+        $yaml = FbpDumper::toYaml($this->source);
+        $this->assertEquals($expected2, $yaml);
+    }
+
+    public function testFbpDump()
+    {
+        $this->markTestSkipped();
     }
 }
