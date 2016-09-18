@@ -44,7 +44,7 @@ final class Loader
 
         switch ($type) {
             case 'fbp':
-                $loader = new FbpParser([], $content);
+                $loader = new FbpParser($content);
                 $content = $loader->run();
                 break;
             case 'yaml':

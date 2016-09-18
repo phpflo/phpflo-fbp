@@ -98,7 +98,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser([], $file);
+        $parser = new FbpParser($file);
         $this->assertEquals($expected, $parser->run());
     }
 
@@ -212,7 +212,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser([], $file);
+        $parser = new FbpParser($file);
         $this->assertEquals($expected, $parser->run());
     }
 
@@ -286,7 +286,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser([], $file);
+        $parser = new FbpParser($file);
         $this->assertEquals($expected, $parser->run());
     }
 

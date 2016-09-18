@@ -53,7 +53,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $source optional for initializing
      * @param array $settings optional settings for parser
      */
-    public function __construct($settings = [], $source = '')
+    public function __construct($source = '', $settings = [])
     {
         $this->source   = $source;
         $this->settings = array_replace_recursive(
