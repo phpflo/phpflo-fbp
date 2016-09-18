@@ -11,6 +11,7 @@ namespace PhpFlo\Fbp;
 
 use PhpFlo\Common\FbpDefinitionsInterface;
 use PhpFlo\Exception\ParserDefinitionException;
+use PhpFlo\Exception\ParserException;
 
 /**
  * Class FbpParser
@@ -49,10 +50,10 @@ class FbpParser implements FbpDefinitionsInterface
     /**
      * FbpParser constructor.
      *
-     * @param string $source
+     * @param string $source optional for initializing
      * @param array $settings optional settings for parser
      */
-    public function __construct($source, $settings = [])
+    public function __construct($settings = [], $source = '')
     {
         $this->source   = $source;
         $this->settings = array_replace_recursive(
@@ -73,10 +74,20 @@ class FbpParser implements FbpDefinitionsInterface
     }
 
     /**
-     * @return mixed
+     * @param string $source
+     * @return array
+     * @throws ParserException
      */
-    public function run()
+    public function run($source = '')
     {
+        if ('' != $source) {
+            $this->source = $source;
+        }
+
+        if (empty($this->source)) {
+            throw new ParserException("FbpParser::run(): no source data or empty string given!");
+        }
+
         $this->definition = $this->schema; // reset
         $this->linecount = 1;
 
@@ -225,6 +236,7 @@ class FbpParser implements FbpDefinitionsInterface
     /**
      * @param string $line
      * @return array
+     * @throws ParserDefinitionException
      */
     private function examineDefinition($line)
     {

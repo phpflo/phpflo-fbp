@@ -9,6 +9,7 @@
  */
 namespace Tests\PhpFlo\Fbp;
 
+use PhpFlo\Exception\ParserException;
 use PhpFlo\Fbp\FbpParser;
 
 class FbpParserTest extends \PHPUnit_Framework_TestCase
@@ -97,7 +98,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser($file);
+        $parser = new FbpParser([], $file);
         $this->assertEquals($expected, $parser->run());
     }
 
@@ -211,7 +212,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser($file);
+        $parser = new FbpParser([], $file);
         $this->assertEquals($expected, $parser->run());
     }
 
@@ -285,7 +286,7 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser($file);
+        $parser = new FbpParser([], $file);
         $this->assertEquals($expected, $parser->run());
     }
 
@@ -380,7 +381,16 @@ EOF;
             ],
         ];
 
-        $parser = new FbpParser($file);
-        $this->assertEquals($expected, $parser->run());
+        $parser = new FbpParser();
+        $this->assertEquals($expected, $parser->run($file));
+    }
+
+    /**
+     * @expectedException \PhpFlo\Exception\ParserException
+     */
+    public function testParserException()
+    {
+        $parser = new FbpParser();
+        $parser->run();
     }
 }
