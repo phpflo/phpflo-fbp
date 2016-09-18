@@ -393,4 +393,97 @@ EOF;
         $parser = new FbpParser();
         $parser->run();
     }
+
+    public function testMultiInitializersTest()
+    {
+        $expected = [
+            'properties' => ['name' => '',],
+            'initializers' => [
+                [
+                    'data' => 'yadda',
+                    'tgt' => [
+                        'process' => 'ReadFile',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'data' => 'another',
+                    'tgt' => [
+                        'process' => 'ReadFile2',
+                        'port' => 'IN',
+                    ],
+                ],
+            ],
+            'processes' => [
+                'ReadFile' => [
+                    'component' => 'ReadFile',
+                    'metadata' => [
+                        'label' => 'ReadFile',
+                    ],
+                ],
+                'SplitbyLines' => [
+                    'component' => 'SplitStr',
+                    'metadata' => [
+                        'label' => 'SplitStr',
+                    ],
+                ],
+                'Display' => [
+                    'component' => 'Output',
+                    'metadata' => [
+                        'label' => 'Output',
+                    ],
+                ],
+                'CountLines' => [
+                    'component' => 'Counter',
+                    'metadata' => [
+                        'label' => 'Counter',
+                    ],
+                ]
+            ],
+            'connections' => [
+                [
+                    'src' => [
+                        'process' => 'ReadFile',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'SplitbyLines',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'ReadFile',
+                        'port' => 'ERROR',
+                    ],
+                    'tgt' => [
+                        'process' => 'Display',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'SplitbyLines',
+                        'port' => 'OUT',
+                    ],
+                    'tgt' => [
+                        'process' => 'CountLines',
+                        'port' => 'IN',
+                    ],
+                ],
+                [
+                    'src' => [
+                        'process' => 'CountLines',
+                        'port' => 'COUNT',
+                    ],
+                    'tgt' => [
+                        'process' => 'Display',
+                        'port' => 'IN',
+                    ],
+                ],
+            ],
+        ];
+
+        $this->markTestSkipped("add implementation for multiple initializers");
+    }
 }
