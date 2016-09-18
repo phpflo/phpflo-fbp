@@ -19,7 +19,7 @@ use PhpFlo\Exception\ParserException;
  * @package PhpFlo\Parser
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-class FbpParser implements FbpDefinitionsInterface
+final class FbpParser implements FbpDefinitionsInterface
 {
 
     /**

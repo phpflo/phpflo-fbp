@@ -20,7 +20,7 @@ use Symfony\Component\Yaml\Yaml;
  * @package PhpFlo\Fbp
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-class FbpDumper implements FbpDefinitionsInterface
+final class FbpDumper implements FbpDefinitionsInterface
 {
     /**
      * @var array
@@ -170,7 +170,7 @@ class FbpDumper implements FbpDefinitionsInterface
      * @param string $targetPort
      * @return string
      */
-    private function connectPorts($sourcePort, $targetPort)
+    private static function connectPorts($sourcePort, $targetPort)
     {
         return implode(
             " " . self::SOURCE_TARGET_SEPARATOR . " ",
