@@ -1,5 +1,5 @@
 {
-  "name": "phpflo/phpflo-fpb",
+  "name": "phpflo/phpflo-fbp",
   "description": "fbp implementation for php",
   "type": "library",
   "keywords": ["fbp", "flow"],
