@@ -75,7 +75,7 @@ final class FbpParser implements FbpDefinitionsInterface
 
     /**
      * @param string $source
-     * @return array
+     * @return FbpDefinition
      * @throws ParserException
      */
     public function run($source = '')
@@ -103,7 +103,7 @@ final class FbpParser implements FbpDefinitionsInterface
             $this->linecount++;
         }
 
-        return $this->definition;
+        return new FbpDefinition($this->definition);
     }
 
     /**

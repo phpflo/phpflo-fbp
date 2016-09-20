@@ -26,7 +26,12 @@ class FbpDefinition implements DefinitionInterface, FbpDefinitionsInterface
      */
     private $schema;
 
-    public function __construct()
+    /**
+     * FbpDefinition constructor.
+     *
+     * @param array $definition
+     */
+    public function __construct(array $definition = [])
     {
         $this->schema = [
             self::PROPERTIES_LABEL => [
@@ -36,6 +41,54 @@ class FbpDefinition implements DefinitionInterface, FbpDefinitionsInterface
             self::PROCESSES_LABEL => [],
             self::CONNECTIONS_LABEL => [],
         ];
+
+        $this->definition($definition);
+    }
+
+    /**
+     * @param array $definition
+     * @return $this
+     */
+    public function definition(array $definition)
+    {
+        $this->schema = array_replace_recursive(
+            $this->schema,
+            $definition
+        );
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function properties()
+    {
+        return $this->schema[self::PROPERTIES_LABEL];
+    }
+
+    /**
+     * @return array
+     */
+    public function initializers()
+    {
+        return $this->schema[self::INITIALIZERS_LABEL];
+    }
+
+    /**
+     * @return array
+     */
+    public function processes()
+    {
+        return $this->schema[self::PROCESSES_LABEL];
+    }
+
+    /**
+     * @return array
+     */
+    public function connections()
+    {
+        return $this->schema[self::CONNECTIONS_LABEL];
     }
 
     /**

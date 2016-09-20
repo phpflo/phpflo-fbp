@@ -99,7 +99,7 @@ EOF;
         ];
 
         $parser = new FbpParser($file);
-        $this->assertEquals($expected, $parser->run());
+        $this->assertEquals($expected, $parser->run()->toArray());
     }
 
     public function testMultiDefWithInitializer()
@@ -213,7 +213,7 @@ EOF;
         ];
 
         $parser = new FbpParser($file);
-        $this->assertEquals($expected, $parser->run());
+        $this->assertEquals($expected, $parser->run()->toArray());
     }
 
     public function testSimpleWithEmptyDescription()
@@ -287,7 +287,7 @@ EOF;
         ];
 
         $parser = new FbpParser($file);
-        $this->assertEquals($expected, $parser->run());
+        $this->assertEquals($expected, $parser->run()->toArray());
     }
 
     public function testSingleDefWithInitializer()
@@ -382,7 +382,7 @@ EOF;
         ];
 
         $parser = new FbpParser();
-        $this->assertEquals($expected, $parser->run($file));
+        $this->assertEquals($expected, $parser->run($file)->toArray());
     }
 
     /**

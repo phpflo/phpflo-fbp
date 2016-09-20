@@ -19,6 +19,32 @@ namespace PhpFlo\Common;
 interface DefinitionInterface
 {
     /**
+     * @param array $definition
+     * @return $this
+     */
+    public function definition(array $definition);
+
+    /**
+     * @return array
+     */
+    public function properties();
+
+    /**
+     * @return array
+     */
+    public function initializers();
+
+    /**
+     * @return array
+     */
+    public function processes();
+
+    /**
+     * @return array
+     */
+    public function connections();
+
+    /**
      * @return array
      */
     public function toArray();
