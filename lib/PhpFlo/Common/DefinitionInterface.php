@@ -67,5 +67,5 @@ interface DefinitionInterface
     /**
      * @return string
      */
-    public function getName();
+    public function name();
 }

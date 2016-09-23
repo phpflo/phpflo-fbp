@@ -92,6 +92,14 @@ class FbpDefinition implements DefinitionInterface, FbpDefinitionsInterface
     }
 
     /**
+     * @return string
+     */
+    public function name()
+    {
+        return $this->schema[self::PROPERTIES_LABEL]['name'];
+    }
+
+    /**
      * @return array
      */
     public function toArray()
@@ -121,13 +129,5 @@ class FbpDefinition implements DefinitionInterface, FbpDefinitionsInterface
     public function toFbp()
     {
         return FbpDumper::toFbp($this->schema);
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->schema[FbpDefinitionsInterface::PROPERTIES_LABEL]['name'];
     }
 }
