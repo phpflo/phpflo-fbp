@@ -9,7 +9,10 @@
  */
 namespace PhpFlo\Loader;
 
+use PhpFlo\Common\DefinitionInterface;
+use PhpFlo\Common\LoaderInterface;
 use PhpFlo\Exception\LoaderException;
+use PhpFlo\Fbp\FbpDefinition;
 use PhpFlo\Fbp\FbpParser;
 use Symfony\Component\Yaml\Yaml;
 
@@ -19,7 +22,7 @@ use Symfony\Component\Yaml\Yaml;
  * @package PhpFlo\Loader
  * @author Marc Aschmann <maschmann@gmail.com>
  */
-final class Loader
+final class Loader implements LoaderInterface
 {
     private static $types = [
         'yml' => 'yaml',
@@ -30,7 +33,7 @@ final class Loader
 
     /**
      * @param string $file name/path of file to load
-     * @return array
+     * @return DefinitionInterface
      * @throws LoaderException
      */
     public static function load($file)
@@ -45,17 +48,21 @@ final class Loader
         switch ($type) {
             case 'fbp':
                 $loader = new FbpParser($content);
-                $content = $loader->run()->toArray();
+                $definition = $loader->run();
                 break;
             case 'yaml':
-                $content = Yaml::parse($content);
+                $definition = new FbpDefinition(
+                    Yaml::parse($content)
+                );
                 break;
             case 'json':
-                $content = json_decode($content, true);
+                $definition = new FbpDefinition(
+                    json_decode($content, true)
+                );
                 break;
         }
 
-        return $content;
+        return $definition;
     }
 
     /**

@@ -63,4 +63,9 @@ interface DefinitionInterface
      * @return string
      */
     public function toFbp();
+
+    /**
+     * @return string
+     */
+    public function getName();
 }

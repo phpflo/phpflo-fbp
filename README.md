@@ -10,7 +10,7 @@ Flowbased programming protocol (fbp) config file loader
 ## Introduction
 
 This library allows you to load and parse configuration for your phpflo project. It also works standalone if you want to convert your old json configs to fbp spec.
-Supported config formats are json (.json), yaml (.yml) and fbp (.fbp), output is array.
+Supported config formats are json (.json), yaml (.yml) and fbp (.fbp), output is an object of type FbpDefinition. This allows you to output your parsed content in different formats, ranging from array over fbp, json to yaml.
 
 ## Code Samples
 

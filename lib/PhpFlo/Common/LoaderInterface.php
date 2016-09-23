@@ -9,6 +9,8 @@
  */
 namespace PhpFlo\Common;
 
+use PhpFlo\Exception\LoaderException;
+
 /**
  * Interface LoaderInterface
  *
@@ -18,8 +20,9 @@ namespace PhpFlo\Common;
 interface LoaderInterface
 {
     /**
-     * @param string $input
-     * @return array|bool
+     * @param string $file filename/path
+     * @return DefinitionInterface
+     * @throws LoaderException
      */
-    public function parse($input);
+    public static function load($file);
 }

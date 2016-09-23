@@ -66,7 +66,7 @@ EOF;
         $url = $this->createFile('test.yml', $yaml);
         $definition = Loader::load($url);
 
-        $this->assertArrayHasKey('connections', $definition);
+        $this->assertArrayHasKey('connections', $definition->toArray());
     }
 
     public function testLoadJsonFile()
@@ -151,7 +151,7 @@ EOF;
         $url = $this->createFile('test.json', $json);
         $definition = Loader::load($url);
 
-        $this->assertArrayHasKey('connections', $definition);
+        $this->assertArrayHasKey('connections', $definition->toArray());
     }
 
     public function testLoadFbpFile()
@@ -166,7 +166,7 @@ EOF;
         $url = $this->createFile('test.fbp', $fbp);
         $definition = Loader::load($url);
 
-        $this->assertArrayHasKey('connections', $definition);
+        $this->assertArrayHasKey('connections', $definition->toArray());
     }
 
     private function createFile($name, $content)

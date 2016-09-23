@@ -122,4 +122,12 @@ class FbpDefinition implements DefinitionInterface, FbpDefinitionsInterface
     {
         return FbpDumper::toFbp($this->schema);
     }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->schema[FbpDefinitionsInterface::PROPERTIES_LABEL]['name'];
+    }
 }
