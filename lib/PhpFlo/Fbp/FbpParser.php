@@ -114,6 +114,7 @@ final class FbpParser implements FbpDefinitionsInterface
     private function examineSubset($line)
     {
         $subset = [];
+        $step = [];
         $nextSrc = null;
         $hasInitializer = false;
 
