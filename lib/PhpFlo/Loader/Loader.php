@@ -33,7 +33,7 @@ final class Loader implements LoaderInterface
 
     /**
      * @param string $file name/path of file to load
-     * @return DefinitionInterface
+     * @return DefinitionInterface|null
      * @throws LoaderException
      */
     public static function load($file)
@@ -60,6 +60,9 @@ final class Loader implements LoaderInterface
                     json_decode($content, true)
                 );
                 break;
+            default:
+                $defnition = null;
+                throw new LoaderException("Loader::load(): Something unexpected happened.");
         }
 
         return $definition;
