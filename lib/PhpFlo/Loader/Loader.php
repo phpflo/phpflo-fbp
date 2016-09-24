@@ -61,7 +61,6 @@ final class Loader implements LoaderInterface
                 );
                 break;
             default:
-                $defnition = null;
                 throw new LoaderException("Loader::load(): Something unexpected happened.");
         }
 

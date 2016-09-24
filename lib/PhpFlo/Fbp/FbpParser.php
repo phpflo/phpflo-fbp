@@ -137,10 +137,7 @@ final class FbpParser implements FbpDefinitionsInterface
                 case !empty($step[self::DATA_LABEL]) && ($hasInport && $hasOutport):
                     // initializer + inport
                     $nextSrc = $resolved;
-                    $step[self::TARGET_LABEL] = [
-                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
-                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
-                    ];
+                    $step[self::TARGET_LABEL] = $this->addPort($resolved, self::INPORT_LABEL);
                     // multi def oneliner initializer resolved
                     array_push($this->definition[self::INITIALIZERS_LABEL], $step);
                     $step = [];
@@ -148,14 +145,8 @@ final class FbpParser implements FbpDefinitionsInterface
                 case !empty($nextSrc) && ($hasInport && $hasOutport):
                     // if there was an initializer, we get a full touple with this iteration
                     $step = [
-                        self::SOURCE_LABEL => [
-                            self::PROCESS_LABEL => $nextSrc[self::PROCESS_LABEL],
-                            self::PORT_LABEL => $nextSrc[self::OUTPORT_LABEL],
-                        ],
-                        self::TARGET_LABEL => [
-                            self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
-                            self::PORT_LABEL => $resolved[self::INPORT_LABEL],
-                        ]
+                        self::SOURCE_LABEL => $this->addPort($nextSrc, self::OUTPORT_LABEL),
+                        self::TARGET_LABEL => $this->addPort($resolved, self::INPORT_LABEL),
                     ];
                     $nextSrc = $resolved;
                     array_push($subset, $step);
@@ -164,10 +155,7 @@ final class FbpParser implements FbpDefinitionsInterface
                 case $hasInport && $hasOutport:
                     // tgt + multi def
                     $nextSrc = $resolved;
-                    $step[self::TARGET_LABEL] = [
-                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
-                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
-                    ];
+                    $step[self::TARGET_LABEL] = $this->addPort($resolved, self::INPORT_LABEL);
                     // check if we've already got the touple ready
                     if (!empty($step[self::SOURCE_LABEL])) {
                         array_push($subset, $step);
@@ -176,16 +164,10 @@ final class FbpParser implements FbpDefinitionsInterface
                     break;
                 case $hasInport && $nextSrc:
                     // use orevious OUT as src to fill touple
-                    $step[self::SOURCE_LABEL] = [
-                        self::PROCESS_LABEL => $nextSrc[self::PROCESS_LABEL],
-                        self::PORT_LABEL => $nextSrc[self::OUTPORT_LABEL],
-                    ];
+                    $step[self::SOURCE_LABEL] = $this->addPort($nextSrc, self::OUTPORT_LABEL);
                     $nextSrc = null;
                 case $hasInport:
-                    $step[self::TARGET_LABEL] = [
-                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
-                        self::PORT_LABEL => $resolved[self::INPORT_LABEL],
-                    ];
+                    $step[self::TARGET_LABEL] = $this->addPort($resolved, self::INPORT_LABEL);
                     // resolved touple
                     if (empty($step[self::DATA_LABEL])) {
                         array_push($subset, $step);
@@ -197,10 +179,7 @@ final class FbpParser implements FbpDefinitionsInterface
                     break;
                 case $hasOutport:
                     // simplest case OUT -> IN
-                    $step[self::SOURCE_LABEL] = [
-                        self::PROCESS_LABEL => $resolved[self::PROCESS_LABEL],
-                        self::PORT_LABEL => $resolved[self::OUTPORT_LABEL],
-                    ];
+                    $step[self::SOURCE_LABEL] = $this->addPort($resolved, self::OUTPORT_LABEL);
                     break;
                 case $hasInitializer:
                     // initialization value: at the moment we only support one
@@ -231,6 +210,19 @@ final class FbpParser implements FbpDefinitionsInterface
         }
 
         return true;
+    }
+
+    /**
+     * @param array $definition
+     * @param string $label
+     * @return array
+     */
+    private function addPort(array $definition, $label)
+    {
+        return [
+            self::PROCESS_LABEL => $definition[self::PROCESS_LABEL],
+            self::PORT_LABEL => $definition[$label],
+        ];
     }
 
     /**

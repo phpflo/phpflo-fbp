@@ -11,6 +11,7 @@ namespace Tests\PhpFlo\Loader;
 
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamFile;
+use PhpFlo\Exception\LoaderException;
 use PhpFlo\Loader\Loader;
 
 class LoaderTest extends \PHPUnit_Framework_TestCase
@@ -167,6 +168,31 @@ EOF;
         $definition = Loader::load($url);
 
         $this->assertArrayHasKey('connections', $definition->toArray());
+    }
+
+    /**
+     * @expectedException \PhpFlo\Exception\LoaderException
+     */
+    public function testLoadEmptyFileWithException()
+    {
+        $uri = $this->createFile('test.fbp', '');
+        Loader::load($uri);
+    }
+
+    /**
+     * @expectedException \PhpFlo\Exception\LoaderException
+     */
+    public function testUnsupportedFileTypeException()
+    {
+        Loader::load('my/file/test.xyz');
+    }
+
+    /**
+     * @expectedException \PhpFlo\Exception\LoaderException
+     */
+    public function testFileNotFoundExcetion()
+    {
+        Loader::load('test.fbp');
     }
 
     private function createFile($name, $content)
