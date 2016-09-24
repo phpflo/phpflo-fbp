@@ -20,5 +20,11 @@ class FbpDefinitionTest extends \PHPUnit_Framework_TestCase
             ],
             $definition->toArray()
         );
+
+        //$this->assertTrue(is_string($definition->toFbp()));
+
+        $this->assertTrue(is_string($definition->toJson()));
+
+        $this->assertTrue(is_string($definition->toYaml()));
     }
 }

@@ -124,7 +124,7 @@ final class FbpDumper implements FbpDefinitionsInterface
     {
         self::hasElement(self::PROCESS_LABEL, $processPart);
         self::hasElement(self::PORT_LABEL, $processPart);
-        
+
         $inport = '';
         $outport = '';
         $process = $processPart[self::PROCESS_LABEL];
