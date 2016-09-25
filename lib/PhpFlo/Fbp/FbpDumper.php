@@ -72,14 +72,10 @@ final class FbpDumper implements FbpDefinitionsInterface
         if (!empty($definition[self::INITIALIZERS_LABEL])) {
             foreach ($definition[self::INITIALIZERS_LABEL] as $initializer) {
                 if (empty($initializer[self::DATA_LABEL])) {
-                    throw new DumperException("Defintion has " .
-                        self::INITIALIZERS_LABEL . " but no " . self::DATA_LABEL . " node"
-                    );
+                    self::throwDumperException('no_definition', self::DATA_LABEL);
                 }
                 if (empty($initializer[self::TARGET_LABEL])) {
-                    throw new DumperException("Defintion has " .
-                        self::INITIALIZERS_LABEL . " but no " . self::TARGET_LABEL . " node"
-                    );
+                    self::throwDumperException('no_definition', self::TARGET_LABEL);
                 }
                 array_push(
                     $fbp,
@@ -134,7 +130,7 @@ final class FbpDumper implements FbpDefinitionsInterface
         if (self::hasElement($process, self::$processes, false)) {
             $meta = "(" . self::$processes[$process][self::COMPONENT_LABEL] . ")";
         } else {
-            throw new DumperException("{$process} is not defined in " . self::PROCESSES_LABEL);
+            self::throwDumperException('process', $process);
         }
 
         if (self::SOURCE_LABEL == $type) {
@@ -156,7 +152,7 @@ final class FbpDumper implements FbpDefinitionsInterface
     {
         if (empty($haystack[$needle])) {
             if ($triggerException) {
-                throw new DumperException("Element has no {$needle}");
+                self::throwDumperException('elmeent', $needle);
             } else {
                 return false;
             }
@@ -179,5 +175,22 @@ final class FbpDumper implements FbpDefinitionsInterface
                 $targetPort
             ]
         );
+    }
+
+    private static function throwDumperException($type, $value)
+    {
+        switch ($type) {
+            case 'element':
+                throw new DumperException("Element has no {$value}");
+                break;
+            case 'process':
+                throw new DumperException("{$value} is not defined in " . self::PROCESSES_LABEL);
+                break;
+            case 'no_definition':
+                throw new DumperException("Defintion has " .
+                    self::INITIALIZERS_LABEL . " but no {$value} node"
+                );
+                break;
+        }
     }
 }
