@@ -62,33 +62,33 @@ final class FbpDumper implements FbpDefinitionsInterface
     private static function createFbp(array $definition)
     {
         $fbp = [];
-        // handle initializer
-        if (!empty($definition[self::INITIALIZERS_LABEL])) {
-            if (empty($definition[self::INITIALIZERS_LABEL][self::DATA_LABEL])) {
-                throw new DumperException("Defintion has " .
-                    self::INITIALIZERS_LABEL . " but no 
-                    " . self::DATA_LABEL . " node"
-                );
-            }
 
-            if (empty($definition[self::INITIALIZERS_LABEL][self::TARGET_LABEL])) {
-                throw new DumperException("Defintion has " .
-                    self::INITIALIZERS_LABEL . " but no 
-                    " . self::TARGET_LABEL . " node"
-                );
-            }
-
-            array_push(
-                $fbp,
-                self::connectPorts(
-                    $definition[self::INITIALIZERS_LABEL][self::DATA_LABEL],
-                    self::examineProcess(self::TARGET_LABEL, $definition[self::INITIALIZERS_LABEL][self::TARGET_LABEL])
-                )
-            );
-        }
-
+        // first check for process definitions
         if (self::hasElement(self::PROCESSES_LABEL, $definition)) {
             self::$processes = $definition[self::PROCESSES_LABEL];
+        }
+
+        // handle initializer
+        if (!empty($definition[self::INITIALIZERS_LABEL])) {
+            foreach ($definition[self::INITIALIZERS_LABEL] as $initializer) {
+                if (empty($initializer[self::DATA_LABEL])) {
+                    throw new DumperException("Defintion has " .
+                        self::INITIALIZERS_LABEL . " but no " . self::DATA_LABEL . " node"
+                    );
+                }
+                if (empty($initializer[self::TARGET_LABEL])) {
+                    throw new DumperException("Defintion has " .
+                        self::INITIALIZERS_LABEL . " but no " . self::TARGET_LABEL . " node"
+                    );
+                }
+                array_push(
+                    $fbp,
+                    self::connectPorts(
+                        $initializer[self::DATA_LABEL],
+                        self::examineProcess(self::TARGET_LABEL, $initializer[self::TARGET_LABEL])
+                    )
+                );
+            }
         }
 
         foreach ($definition[self::CONNECTIONS_LABEL] as $connection) {
@@ -118,6 +118,7 @@ final class FbpDumper implements FbpDefinitionsInterface
     /**
      * @param string $type
      * @param array $processPart
+     * @throws DumperException
      * @return string
      */
     private static function examineProcess($type, array $processPart)
