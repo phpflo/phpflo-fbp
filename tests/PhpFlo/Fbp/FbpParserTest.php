@@ -20,9 +20,9 @@ class FbpParserTest extends \PHPUnit_Framework_TestCase
 
         $file = <<<EOF
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
-ReadFile ERROR -> IN Display(Output)
-SplitbyLines OUT -> IN CountLines(Counter)
-CountLines COUNT -> IN Display
+ReadFile() ERROR -> IN Display(Output)
+SplitbyLines() OUT -> IN CountLines(Counter)
+CountLines() COUNT -> IN Display()
 EOF;
 
         $expected = [
@@ -295,9 +295,9 @@ EOF;
         $file = <<<EOF
 'yadda' -> IN ReadFile(ReadFile)
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
-ReadFile ERROR -> IN Display(Output)
-SplitbyLines OUT -> IN CountLines(Counter)
-CountLines COUNT -> IN Display
+ReadFile() ERROR -> IN Display(Output)
+SplitbyLines() OUT -> IN CountLines(Counter)
+CountLines() COUNT -> IN Display()
 EOF;
 
         $expected = [
