@@ -63,35 +63,42 @@ final class FbpDumper implements FbpDefinitionsInterface
     {
         $fbp = [];
 
-        // first check for process definitions
-        if (self::hasElement(self::PROCESSES_LABEL, $definition)) {
-            self::$processes = $definition[self::PROCESSES_LABEL];
-        }
+        try {
 
-        // handle initializer
-        if (!empty($definition[self::INITIALIZERS_LABEL])) {
-            foreach ($definition[self::INITIALIZERS_LABEL] as $initializer) {
-                if (empty($initializer[self::DATA_LABEL])) {
-                    self::throwDumperException('no_definition', self::DATA_LABEL);
-                }
-                if (empty($initializer[self::TARGET_LABEL])) {
-                    self::throwDumperException('no_definition', self::TARGET_LABEL);
-                }
-                array_push(
-                    $fbp,
-                    self::connectPorts(
-                        $initializer[self::DATA_LABEL],
-                        self::examineProcess(self::TARGET_LABEL, $initializer[self::TARGET_LABEL])
-                    )
-                );
+            // first check for process definitions
+            if (self::hasElement(self::PROCESSES_LABEL, $definition)) {
+                self::$processes = $definition[self::PROCESSES_LABEL];
             }
-        }
 
-        foreach ($definition[self::CONNECTIONS_LABEL] as $connection) {
-            array_push($fbp, self::examineConnectionTouple($connection));
-        }
+            // handle initializer
+            if (!empty($definition[self::INITIALIZERS_LABEL])) {
+                foreach ($definition[self::INITIALIZERS_LABEL] as $initializer) {
+                    if (empty($initializer[self::DATA_LABEL])) {
+                        self::throwDumperException('no_definition', self::DATA_LABEL);
+                    }
+                    if (empty($initializer[self::TARGET_LABEL])) {
+                        self::throwDumperException('no_definition', self::TARGET_LABEL);
+                    }
+                    array_push(
+                        $fbp,
+                        self::connectPorts(
+                            $initializer[self::DATA_LABEL],
+                            self::examineProcess(self::TARGET_LABEL, $initializer[self::TARGET_LABEL])
+                        )
+                    );
+                }
+            }
 
-        return implode(self::FILE_LINEFEED, $fbp);
+            foreach ($definition[self::CONNECTIONS_LABEL] as $connection) {
+                array_push($fbp, self::examineConnectionTouple($connection));
+            }
+
+            return implode(self::FILE_LINEFEED, $fbp);
+        } catch (\Exception $e) {
+            throw new DumperException(
+                "Unexpected dumper error \"{$e->getMessage()}\" in {$e->getFile()} on Line {$e->getLine()}"
+            );
+        }
     }
 
     /**

@@ -486,4 +486,24 @@ EOF;
 
         $this->markTestSkipped("add implementation for multiple initializers");
     }
+
+    /**
+     * @expectedException PhpFlo\Exception\ParserException
+     */
+    public function testComplexMultiDefSingleDefError()
+    {
+        $file = <<< EOF
+CategoryCreator() out -> in MdbPersister()
+CategoryCreator() route -> in RouteCreator() out -> in MdbPersister()
+CategoryCreator() media -> in MediaIterator() out -> in MediaHandler()
+CategoryCreator() bannerset -> in BannersetHandler() out -> bannerset CategoryCreator()
+CategoryCreator() tag -> tags TagCreator() tags -> tag CategoryCreator()
+CategoryCreator() hierarchy -> hierarchy TagCreator() -> hierarchy CategoryCreator()
+CategoryCreator() sidebar -> in SidebarHandler() out -> sidebar CategoryCreator()
+SidebarHandler() build -> in JsonFieldFetcher() sidebar -> in SidebarCreator()
+EOF;
+
+        $parser = new FbpParser();
+        $parser->run($file);
+    }
 }

@@ -97,6 +97,7 @@ final class FbpParser implements FbpDefinitionsInterface
          */
         foreach (preg_split('/' . self::NEWLINES . '/m', $this->source) as $line) {
             $subset = $this->examineSubset($line);
+            $this->validate($subset, $line); // post-parse validation, easier that way
             $this->definition[self::CONNECTIONS_LABEL] = array_merge_recursive(
                 $this->definition[self::CONNECTIONS_LABEL], $subset
             );
@@ -164,7 +165,7 @@ final class FbpParser implements FbpDefinitionsInterface
                     }
                     break;
                 case $hasInport && $nextSrc:
-                    // use orevious OUT as src to fill touple
+                    // use previous OUT as src to fill touple
                     $step[self::SOURCE_LABEL] = $this->addPort($nextSrc, self::OUTPORT_LABEL);
                     $nextSrc = null;
                 case $hasInport:
@@ -275,5 +276,34 @@ final class FbpParser implements FbpDefinitionsInterface
                 ],
             ];
         }
+    }
+
+    /**
+     * @param array $subset
+     * @param string $line
+     */
+    private function validate(array $subset, $line)
+    {
+        foreach ($subset as $touple) {
+            if (empty($touple[self::SOURCE_LABEL])) {
+                $this->validationError($line, self::SOURCE_LABEL);
+            }
+
+            if (empty($touple[self::TARGET_LABEL])) {
+                $this->validationError($line, self::TARGET_LABEL);
+            }
+        }
+    }
+
+    /**
+     * @param string $line
+     * @param string $port
+     * @throws ParserException
+     */
+    private function validationError($line, $port)
+    {
+        throw new ParserException(
+            "Error on line ({$this->linecount}) {$line}: There is no {$port} defined. Maybe you forgot an in or out port?"
+        );
     }
 }
