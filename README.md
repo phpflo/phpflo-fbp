@@ -24,6 +24,7 @@ You can load JSON, YAML and FBP that way.
 Parser by itself:
 ```php
 $myFbpConfig = <<<EOF
+# Read a file and cout its lines
 'test.file' -> IN ReadFile(ReadFile)
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
 ReadFile() ERROR -> IN Display(Output)
@@ -98,6 +99,18 @@ ReadFile() out[1] -> In[3] SplitbyLines()
 For better understanding, the whole RegEx used for definition examination is:
 ```
 ((?P<inport>[a-zA-Z_]+(\[(?P<inport_no>[0-9]+)\])?)\s)?((?P<process>[\w\/]+)(\((?P<component>[\w\/\\\.]+)?\))?)(\s(?P<outport>[a-zA-Z_]+(\[(?P<outport_no>[0-9]+)\])?))?
+```
+*Comments:*
+You can add comments and empty lines for better readability and documentation. If you have a comment in the first line, it will be used as name of the definition.
+```
+# this definition reads files and counts their lines
+ReadFile() OUT -> IN SplitbyLines()
+ReadFile() out -> In SplitbyLines()
+
+# some comment
+
+# and for readability :-)
+ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
 ```
 
 *Initializer:*
