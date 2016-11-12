@@ -18,7 +18,7 @@ class FbpDumperTest extends \PHPUnit_Framework_TestCase
      * @var array
      */
     private $source = [
-        'properties' => ['name' => '',],
+        'properties' => ['name' => 'this definition reads files and counts their lines',],
         'initializers' => [],
         'processes' => [
             'ReadFile' => [
@@ -95,7 +95,7 @@ class FbpDumperTest extends \PHPUnit_Framework_TestCase
         $expected = <<< EOF
 {
     "properties": {
-        "name": ""
+        "name": "this definition reads files and counts their lines"
     },
     "initializers": [],
     "processes": {
@@ -177,7 +177,7 @@ EOF;
     {
         $expected1 = <<<EOF
 properties:
-    name: ''
+    name: 'this definition reads files and counts their lines'
 initializers: {  }
 processes:
     ReadFile:
@@ -230,7 +230,7 @@ EOF;
 
         $expected2 = <<<EOF
 properties:
-    name: ''
+    name: 'this definition reads files and counts their lines'
 initializers: {  }
 processes:
     ReadFile:
@@ -268,9 +268,16 @@ EOF;
         $this->assertEquals($expected2, $yaml);
     }
 
+    /**
+     * @covers PhpFlo\Fbp\FbpDumper::hasElement()
+     * @covers PhpFlo\Fbp\FbpDumper::throwDumperException()
+     * @covers PhpFlo\Fbp\FbpDumper::examineProcess()
+     * @covers PhpFlo\Fbp\FbpDumper::createFbp()
+     */
     public function testFbpDump()
     {
         $expected = <<<EOF
+# this definition reads files and counts their lines
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
 ReadFile(ReadFile) ERROR -> IN Display(Output)
 SplitbyLines(SplitStr) OUT -> IN CountLines(Counter)

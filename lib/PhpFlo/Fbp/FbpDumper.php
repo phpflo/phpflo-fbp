@@ -65,6 +65,14 @@ final class FbpDumper implements FbpDefinitionsInterface
 
         try {
 
+            if (self::hasElement(self::PROPERTIES_LABEL, $definition)) {
+                foreach($definition[self::PROPERTIES_LABEL] as $name => $element) {
+                    if (!empty($element)) {
+                        $fbp[] = '# ' . (string)$element;
+                    }
+                }
+            }
+
             // first check for process definitions
             if (self::hasElement(self::PROCESSES_LABEL, $definition)) {
                 self::$processes = $definition[self::PROCESSES_LABEL];

@@ -43,6 +43,11 @@ final class FbpParser implements FbpDefinitionsInterface
     private $linecount;
 
     /**
+     * @var int
+     */
+    private $linecountOverall;
+
+    /**
      * @var array
      */
     private $definition;
@@ -90,18 +95,25 @@ final class FbpParser implements FbpDefinitionsInterface
 
         $this->definition = $this->schema; // reset
         $this->linecount = 1;
+        $this->linecountOverall = 0;
 
         /*
          * split by lines, OS-independent
          * work each line and parse for definitions
          */
         foreach (preg_split('/' . self::NEWLINES . '/m', $this->source) as $line) {
+            $this->linecountOverall++;
+            // skip lines if empty or comments
+            if ($this->doSkip($line)) {
+                continue;
+            }
             $subset = $this->examineSubset($line);
             $this->validate($subset, $line); // post-parse validation, easier that way
             $this->definition[self::CONNECTIONS_LABEL] = array_merge_recursive(
                 $this->definition[self::CONNECTIONS_LABEL], $subset
             );
-            $this->linecount++;
+
+            $this->linecount;
         }
 
         return new FbpDefinition($this->definition);
@@ -190,7 +202,7 @@ final class FbpParser implements FbpDefinitionsInterface
                     break;
                 default:
                     throw new ParserDefinitionException(
-                        "Line ({$this->linecount}) {$line} does not contain in or out ports!"
+                        "Line ({$this->linecountOverall}) {$line} does not contain in or out ports!"
                     );
             }
         }
@@ -249,7 +261,7 @@ final class FbpParser implements FbpDefinitionsInterface
             $this->examineProcess($matches);
         } else {
             throw new ParserDefinitionException(
-                "No process definition found in line ({$this->linecount}) {$line}"
+                "No process definition found in line ({$this->linecountOverall}) {$line}"
             );
         }
 
@@ -279,6 +291,43 @@ final class FbpParser implements FbpDefinitionsInterface
     }
 
     /**
+     * Add name to definition
+     *
+     * @param string $line
+     */
+    private function addName($line)
+    {
+        $this->definition[self::PROPERTIES_LABEL]['name'] = trim(str_replace('#', '', $line));
+    }
+
+    /**
+     * Check if line is empty or has comment.
+     * In case of comments, add name to definition.
+     *
+     * @param string $line
+     * @return bool
+     */
+    private function doSkip($line)
+    {
+        switch (true) {
+            case (empty(trim($line))):
+                // empty line
+                $skip = true;
+                break;
+            case (1 == preg_match('/(#[\s\w]+)/', $line)):
+                if (1 === $this->linecountOverall) {
+                    $this->addName($line);
+                }
+                $skip = true;
+                break;
+            default:
+                $skip = false;
+        }
+
+        return $skip;
+    }
+
+    /**
      * @param array $subset
      * @param string $line
      */
@@ -303,7 +352,7 @@ final class FbpParser implements FbpDefinitionsInterface
     private function validationError($line, $port)
     {
         throw new ParserException(
-            "Error on line ({$this->linecount}) {$line}: There is no {$port} defined. Maybe you forgot an in or out port?"
+            "Error on line ({$this->linecountOverall}) {$line}: There is no {$port} defined. Maybe you forgot an in or out port?"
         );
     }
 }

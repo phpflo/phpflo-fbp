@@ -290,18 +290,21 @@ EOF;
         $this->assertEquals($expected, $parser->run()->toArray());
     }
 
-    public function testSingleDefWithInitializer()
+    public function testSingleDefWithInitializerAndComments()
     {
         $file = <<<EOF
+# this definition reads files and counts their lines
 'yadda' -> IN ReadFile(ReadFile)
 ReadFile(ReadFile) OUT -> IN SplitbyLines(SplitStr)
+
+# On error, display information
 ReadFile() ERROR -> IN Display(Output)
 SplitbyLines() OUT -> IN CountLines(Counter)
 CountLines() COUNT -> IN Display()
 EOF;
 
         $expected = [
-            'properties' => ['name' => '',],
+            'properties' => ['name' => 'this definition reads files and counts their lines',],
             'initializers' => [
                 [
                     'data' => 'yadda',
