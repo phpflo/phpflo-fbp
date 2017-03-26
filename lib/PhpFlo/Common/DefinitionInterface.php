@@ -7,7 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
+declare(strict_types=1);
 namespace PhpFlo\Common;
 
 /**
@@ -20,52 +20,52 @@ interface DefinitionInterface
 {
     /**
      * @param array $definition
-     * @return $this
+     * @return DefinitionInterface
      */
-    public function definition(array $definition);
+    public function definition(array $definition) : DefinitionInterface;
 
     /**
      * @return array
      */
-    public function properties();
+    public function properties() : array;
 
     /**
      * @return array
      */
-    public function initializers();
+    public function initializers() : array;
 
     /**
      * @return array
      */
-    public function processes();
+    public function processes() : array;
 
     /**
      * @return array
      */
-    public function connections();
+    public function connections() : array;
 
     /**
      * @return array
      */
-    public function toArray();
+    public function toArray() : array;
 
     /**
      * @return string
      */
-    public function toJson();
+    public function toJson() : string;
 
     /**
      * @return string
      */
-    public function toYaml();
+    public function toYaml() : string;
 
     /**
      * @return string
      */
-    public function toFbp();
+    public function toFbp() : string;
 
     /**
      * @return string
      */
-    public function name();
+    public function name() : string;
 }

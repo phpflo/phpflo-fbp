@@ -7,7 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
+declare(strict_types=1);
 namespace PhpFlo\Fbp;
 
 use PhpFlo\Common\FbpDefinitionsInterface;
@@ -31,7 +31,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param array $definition
      * @return string json
      */
-    public static function toJson(array $definition)
+    public static function toJson(array $definition) : string
     {
         return json_encode($definition, JSON_PRETTY_PRINT);
     }
@@ -41,7 +41,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param int $inline level until inlining starts
      * @return string yaml
      */
-    public static function toYaml(array $definition, $inline = 3)
+    public static function toYaml(array $definition, int $inline = 3) : string
     {
         return Yaml::dump($definition, $inline);
     }
@@ -50,7 +50,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param array $definition
      * @return string
      */
-    public static function toFbp(array $definition)
+    public static function toFbp(array $definition) : string
     {
         return self::createFbp($definition);
     }
@@ -58,8 +58,9 @@ final class FbpDumper implements FbpDefinitionsInterface
     /**
      * @param array $definition
      * @return string
+     * @throws DumperException
      */
-    private static function createFbp(array $definition)
+    private static function createFbp(array $definition) : string
     {
         $fbp = [];
 
@@ -115,7 +116,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param array $connectionTouple
      * @return string
      */
-    private static function examineConnectionTouple(array $connectionTouple)
+    private static function examineConnectionTouple(array $connectionTouple) : string
     {
         self::hasElement(self::SOURCE_LABEL, $connectionTouple);
         self::hasElement(self::TARGET_LABEL, $connectionTouple);
@@ -132,7 +133,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @throws DumperException
      * @return string
      */
-    private static function examineProcess($type, array $processPart)
+    private static function examineProcess(string $type, array $processPart) : string
     {
         self::hasElement(self::PROCESS_LABEL, $processPart);
         self::hasElement(self::PORT_LABEL, $processPart);
@@ -163,8 +164,11 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param bool $triggerException
      * @return bool
      */
-    private static function hasElement($needle, array $haystack, $triggerException = true)
-    {
+    private static function hasElement(
+        string $needle,
+        array $haystack,
+        bool $triggerException = true
+    ) : bool {
         if (empty($haystack[$needle])) {
             if ($triggerException) {
                 self::throwDumperException('elmeent', $needle);
@@ -181,7 +185,7 @@ final class FbpDumper implements FbpDefinitionsInterface
      * @param string $targetPort
      * @return string
      */
-    private static function connectPorts($sourcePort, $targetPort)
+    private static function connectPorts(string $sourcePort, string $targetPort) : string
     {
         return implode(
             " " . self::SOURCE_TARGET_SEPARATOR . " ",
@@ -192,7 +196,12 @@ final class FbpDumper implements FbpDefinitionsInterface
         );
     }
 
-    private static function throwDumperException($type, $value)
+    /**
+     * @param string $type
+     * @param string $value
+     * @throws DumperException
+     */
+    private static function throwDumperException(string $type, string $value)
     {
         switch ($type) {
             case 'element':

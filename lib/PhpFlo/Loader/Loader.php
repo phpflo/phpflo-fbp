@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+declare(strict_types=1);
 namespace PhpFlo\Loader;
 
 use PhpFlo\Common\DefinitionInterface;
@@ -24,6 +25,9 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class Loader implements LoaderInterface
 {
+    /**
+     * @var array
+     */
     private static $types = [
         'yml' => 'yaml',
         'yaml' => 'yaml',
@@ -33,10 +37,10 @@ final class Loader implements LoaderInterface
 
     /**
      * @param string $file name/path of file to load
-     * @return DefinitionInterface|null
+     * @return DefinitionInterface
      * @throws LoaderException
      */
-    public static function load($file)
+    public static function load(string $file) : DefinitionInterface
     {
         $type = self::$types[self::checkType($file)];
         $content = self::loadFile($file);
@@ -72,8 +76,9 @@ final class Loader implements LoaderInterface
      *
      * @param string $file
      * @return string
+     * @throws LoaderException
      */
-    private static function checkType($file)
+    private static function checkType(string $file) : string
     {
         $parts = explode('.', $file);
         $type = array_pop($parts);
@@ -88,8 +93,9 @@ final class Loader implements LoaderInterface
     /**
      * @param string $file
      * @return string
+     * @throws LoaderException
      */
-    private static function loadFile($file)
+    private static function loadFile(string $file) : string
     {
         if (file_exists($file) && is_readable($file)) {
             $content = file_get_contents($file);

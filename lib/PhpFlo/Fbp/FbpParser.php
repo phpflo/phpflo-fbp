@@ -7,8 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+declare(strict_types=1);
 namespace PhpFlo\Fbp;
 
+use PhpFlo\Common\DefinitionInterface;
 use PhpFlo\Common\FbpDefinitionsInterface;
 use PhpFlo\Exception\ParserDefinitionException;
 use PhpFlo\Exception\ParserException;
@@ -58,7 +60,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $source optional for initializing
      * @param array $settings optional settings for parser
      */
-    public function __construct($source = '', $settings = [])
+    public function __construct(string $source = '', array $settings = [])
     {
         $this->source   = $source;
         $this->settings = array_replace_recursive(
@@ -80,10 +82,10 @@ final class FbpParser implements FbpDefinitionsInterface
 
     /**
      * @param string $source
-     * @return FbpDefinition
+     * @return DefinitionInterface
      * @throws ParserException
      */
-    public function run($source = '')
+    public function run(string $source = '') : DefinitionInterface
     {
         if ('' != $source) {
             $this->source = $source;
@@ -124,7 +126,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @return array
      * @throws ParserDefinitionException
      */
-    private function examineSubset($line)
+    private function examineSubset(string $line) : array
     {
         $subset = [];
         $step = [];
@@ -217,7 +219,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $value
      * @return bool
      */
-    private function hasValue(array $check, $value)
+    private function hasValue(array $check, string $value) : bool
     {
         if (empty($check[$value])) {
             return false;
@@ -231,7 +233,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $label
      * @return array
      */
-    private function addPort(array $definition, $label)
+    private function addPort(array $definition, string $label) : array
     {
         return [
             self::PROCESS_LABEL => $definition[self::PROCESS_LABEL],
@@ -244,7 +246,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @return array
      * @throws ParserDefinitionException
      */
-    private function examineDefinition($line)
+    private function examineDefinition(string $line) : array
     {
         preg_match('/' . self::PROCESS_DEFINITION . '/', $line, $matches);
         foreach ($matches as $key => $value) {
@@ -295,7 +297,7 @@ final class FbpParser implements FbpDefinitionsInterface
      *
      * @param string $line
      */
-    private function addName($line)
+    private function addName(string $line)
     {
         $this->definition[self::PROPERTIES_LABEL]['name'] = trim(str_replace('#', '', $line));
     }
@@ -307,7 +309,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $line
      * @return bool
      */
-    private function doSkip($line)
+    private function doSkip(string $line) : bool
     {
         switch (true) {
             case (empty(trim($line))):
@@ -331,7 +333,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param array $subset
      * @param string $line
      */
-    private function validate(array $subset, $line)
+    private function validate(array $subset, string $line)
     {
         foreach ($subset as $touple) {
             if (empty($touple[self::SOURCE_LABEL])) {
@@ -349,7 +351,7 @@ final class FbpParser implements FbpDefinitionsInterface
      * @param string $port
      * @throws ParserException
      */
-    private function validationError($line, $port)
+    private function validationError(string $line, string $port)
     {
         throw new ParserException(
             "Error on line ({$this->linecountOverall}) {$line}: There is no {$port} defined. Maybe you forgot an in or out port?"
